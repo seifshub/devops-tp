@@ -1,6 +1,0 @@
-projectKey=flast-devops-app
-serverUrl=http://localhost:9000
-serverVersion=26.4.0.121862
-dashboardUrl=http://localhost:9000/dashboard?id=flast-devops-app
-ceTaskId=fbadff8d-2a55-409c-ad5e-d524c2f7bb2c
-ceTaskUrl=http://localhost:9000/api/ce/task?id=fbadff8d-2a55-409c-ad5e-d524c2f7bb2c

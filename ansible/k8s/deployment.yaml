@@ -6,7 +6,7 @@ metadata:
   labels:
     app: flask-app
 spec:
-  replicas: 2                    # Run 2 copies for availability
+  replicas: 2
   selector:
     matchLabels:
       app: flask-app
@@ -15,33 +15,41 @@ spec:
       labels:
         app: flask-app
       annotations:
-        # Tell Prometheus to scrape this pod
         prometheus.io/scrape: "true"
         prometheus.io/port: "5000"
         prometheus.io/path: "/metrics"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
       - name: flask-app
-        image: "seifchou/flask-devops-app"   # Ansible will fill this in
+        image: "{{ docker_image }}"
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
-        # Health checks — K8s restarts the pod if these fail
         livenessProbe:
           httpGet:
             path: /health
             port: 5000
           initialDelaySeconds: 10
           periodSeconds: 15
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /health
             port: 5000
           initialDelaySeconds: 5
           periodSeconds: 10
+          failureThreshold: 3
         resources:
           requests:
             memory: "64Mi"
             cpu: "100m"
           limits:
-            memory: "128Mi"
+            memory: "256Mi"
             cpu: "200m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]

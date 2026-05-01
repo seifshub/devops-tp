@@ -4,7 +4,6 @@ from app import app
 class FlaskAppTestCase(unittest.TestCase):
 
     def setUp(self):
-        # Creates a test client before each test
         self.app = app.test_client()
         self.app.testing = True
 
@@ -17,18 +16,18 @@ class FlaskAppTestCase(unittest.TestCase):
         data = response.get_json()
         self.assertIn('message', data)
         self.assertEqual(data['status'], 'healthy')
+        self.assertEqual(data['version'], '1.0')
 
     def test_health_endpoint(self):
         response = self.app.get('/health')
         self.assertEqual(response.status_code, 200)
-        data = response.get_json()
-        self.assertEqual(data['status'], 'UP')
+        self.assertEqual(response.get_json()['status'], 'UP')
 
     def test_metrics_endpoint(self):
         response = self.app.get('/metrics')
         self.assertEqual(response.status_code, 200)
+        self.assertIn(b'flask_request', response.data)
+        self.assertIn('text/plain', response.content_type)
 
 if __name__ == '__main__':
     unittest.main()
-
-

@@ -67,6 +67,7 @@ pipeline {
                         --cov=app \
                         --cov-report=xml:../coverage.xml \
                         --cov-report=term-missing \
+                        --junit-xml=../test-results.xml \
                         -v
                 '''
             }
@@ -137,13 +138,17 @@ pipeline {
                 echo '🔒 Scanning Docker image for vulnerabilities...'
                 sh '''
                     trivy image \
-                        --exit-code 0 \
-                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        --severity CRITICAL \
                         --format table \
                         --output trivy-report.txt \
                         ${FULL_IMAGE}
 
-                    cat trivy-report.txt
+                    trivy image \
+                        --exit-code 0 \
+                        --severity HIGH \
+                        --format table \
+                        ${FULL_IMAGE}
                 '''
             }
             post {
@@ -184,12 +189,10 @@ pipeline {
                 dir('terraform') {
                     sh '''
                         terraform init
-
-                        # Import existing namespaces into state (ignore errors if not exist yet)
-                        terraform import kubernetes_namespace.app flask-app || true
-                        terraform import kubernetes_namespace.monitoring monitoring || true
-
-                        # Now apply — will update existing, create if missing
+                        terraform state list | grep -q kubernetes_namespace.app \
+                            || terraform import kubernetes_namespace.app flask-app
+                        terraform state list | grep -q kubernetes_namespace.monitoring \
+                            || terraform import kubernetes_namespace.monitoring monitoring
                         terraform apply -auto-approve
                     '''
                 }
@@ -268,7 +271,7 @@ pipeline {
         }
         always {
             // Clean up Docker images to save disk space
-            sh 'docker image prune -f || true'
+            sh "docker rmi ${FULL_IMAGE} || true"
             cleanWs()    // clean workspace after each build
         }
     }

@@ -6,8 +6,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx
   rules:
-  - host: flask-app.local    # We'll add this to /etc/hosts
+  - host: flask-app.local
     http:
       paths:
       - path: /

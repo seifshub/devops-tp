@@ -1,0 +1,14 @@
+.git/
+venv/
+terraform/
+ansible/
+monitoring/
+*.tfstate
+*.tfstate.backup
+app/test_app.py
+app/__pycache__/
+app/.pytest_cache/
+coverage.xml
+trivy-report.txt
+Jenkinsfile
+sonar-project.properties

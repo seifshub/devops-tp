@@ -3,11 +3,13 @@ kind: Service
 metadata:
   name: flask-app-service
   namespace: flask-app
+  labels:
+    app: flask-app
 spec:
   selector:
-    app: flask-app        # Connects to pods with this label
+    app: flask-app
   ports:
   - protocol: TCP
-    port: 80              # Service port (external)
-    targetPort: 5000      # Container port (internal)
+    port: 80
+    targetPort: 5000
   type: ClusterIP
