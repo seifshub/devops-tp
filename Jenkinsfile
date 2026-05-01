@@ -79,13 +79,16 @@ pipeline {
             steps {
                 echo '🔍 Running SonarQube static analysis...'
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=${SONAR_PROJECT} \
-                          -Dsonar.sources=app \
-                          -Dsonar.python.version=3.11 \
-                          -Dsonar.python.coverage.reportPaths=coverage.xml
-                    '''
+                    // Use Jenkins-managed sonar scanner tool
+                    withEnv(["PATH+SONAR=${tool 'sonar-scanner'}/bin"]) {
+                        sh '''
+                            sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT} \
+                            -Dsonar.sources=app \
+                            -Dsonar.python.version=3.11 \
+                            -Dsonar.python.coverage.reportPaths=coverage.xml
+                        '''
+                    }
                 }
             }
         }
