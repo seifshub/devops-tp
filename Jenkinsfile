@@ -127,12 +127,6 @@ pipeline {
             steps {
                 echo '🔒 Scanning Docker image for vulnerabilities...'
                 sh '''
-                    # Install Trivy if not present
-                    if ! command -v trivy &> /dev/null; then
-                        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-                    fi
-
-                    # Scan and save report — HIGH and CRITICAL only
                     trivy image \
                         --exit-code 0 \
                         --severity HIGH,CRITICAL \
@@ -145,7 +139,6 @@ pipeline {
             }
             post {
                 always {
-                    // Archive the security report as a build artifact
                     archiveArtifacts artifacts: 'trivy-report.txt', allowEmptyArchive: true
                 }
             }
