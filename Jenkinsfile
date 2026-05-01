@@ -175,8 +175,13 @@ pipeline {
                 dir('terraform') {
                     sh '''
                         terraform init
-                        terraform plan -out=tfplan
-                        terraform apply -auto-approve tfplan
+
+                        # Import existing namespaces into state (ignore errors if not exist yet)
+                        terraform import kubernetes_namespace.app flask-app || true
+                        terraform import kubernetes_namespace.monitoring monitoring || true
+
+                        # Now apply — will update existing, create if missing
+                        terraform apply -auto-approve
                     '''
                 }
             }
