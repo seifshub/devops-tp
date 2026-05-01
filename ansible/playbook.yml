@@ -1,0 +1,58 @@
+
+---
+- name: Deploy Flask App to Kubernetes
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    # These will be overridden by Jenkins with real values
+    docker_image: "{{ lookup('env', 'DOCKER_IMAGE') | default('yourdockerhub/flask-app:latest') }}"
+    namespace: "flask-app"
+
+  tasks:
+    - name: Verify kubectl can connect to cluster
+      command: kubectl cluster-info
+      register: cluster_info
+      changed_when: false
+
+    - name: Show cluster info
+      debug:
+        var: cluster_info.stdout_lines
+
+    - name: Deploy application (Deployment)
+      kubernetes.core.k8s:
+        state: present
+        template: k8s/deployment.yaml
+      vars:
+        docker_image: "{{ docker_image }}"
+
+    - name: Apply Service
+      kubernetes.core.k8s:
+        state: present
+        src: k8s/service.yaml
+
+    - name: Apply Ingress
+      kubernetes.core.k8s:
+        state: present
+        src: k8s/ingress.yaml
+
+    - name: Wait for deployment to be ready
+      command: >
+        kubectl rollout status deployment/flask-app
+        -n {{ namespace }}
+        --timeout=120s
+      register: rollout_status
+
+    - name: Show rollout status
+      debug:
+        var: rollout_status.stdout
+
+    - name: Get pod status
+      command: kubectl get pods -n {{ namespace }}
+      register: pod_status
+      changed_when: false
+
+    - name: Display pods
+      debug:
+        var: pod_status.stdout_lines

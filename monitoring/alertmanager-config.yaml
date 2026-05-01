@@ -1,0 +1,39 @@
+
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: flask-app-alerts
+  namespace: monitoring
+spec:
+  route:
+    receiver: 'log-receiver'
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 2m
+    matchers:
+    - name: alertname
+      value: FlaskAppDown
+
+  receivers:
+  - name: 'log-receiver'
+    # For the assignment, logging is sufficient
+    # In production you'd add email/Slack here
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flask-app-rules
+  namespace: monitoring
+spec:
+  groups:
+  - name: flask-app
+    rules:
+    - alert: FlaskAppDown
+      # This fires if the app has 0 running pods for 2 minutes
+      expr: kube_deployment_status_replicas_available{deployment="flask-app"} == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Flask app is DOWN"
+        description: "Flask app has had 0 available replicas for 2 minutes."
