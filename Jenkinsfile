@@ -214,14 +214,25 @@ pipeline {
             steps {
                 echo '💨 Running smoke test — checking app is reachable...'
                 sh '''
+                    # Forward the service port to localhost inside Jenkins
+                    kubectl port-forward svc/flask-app-service 8888:80 -n flask-app &
+                    PF_PID=$!
+
+                    # Wait for port-forward to be ready
+                    sleep 5
+
+                    # Test the app
                     for i in $(seq 1 12); do
                         echo "Attempt $i/12..."
-                        if curl -sf http://192.168.49.2/health -H "Host: flask-app.local" | grep -q "UP"; then
-                            echo "✅ Smoke test PASSED! App is healthy."
+                        if curl -sf http://localhost:8888/health | grep -q "UP"; then
+                            echo "✅ Smoke test PASSED!"
+                            kill $PF_PID 2>/dev/null || true
                             exit 0
                         fi
                         sleep 5
                     done
+
+                    kill $PF_PID 2>/dev/null || true
                     echo "❌ Smoke test FAILED!"
                     exit 1
                 '''
