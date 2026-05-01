@@ -9,8 +9,9 @@ terraform {
 
 # Connect Terraform to your local Minikube cluster
 provider "kubernetes" {
-  config_path    = "~/.kube/config"
+  config_path    = "/var/jenkins_home/.kube/config"
   config_context = "minikube"
+  insecure       = true
 }
 
 # Create a dedicated namespace for our app
