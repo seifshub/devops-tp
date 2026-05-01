@@ -25,8 +25,17 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo '📥 Checking out source code...'
-                checkout scm    // pulls code from the Git repo
-                sh 'ls -la'     // show what was checked out
+                checkout scm
+                sh 'ls -la'
+                
+                // Auto-update kubeconfig port from current cluster-info
+                sh '''
+                    PORT=$(kubectl cluster-info 2>/dev/null | grep "control plane" | grep -oP ":\\K[0-9]+")
+                    if [ -n "$PORT" ]; then
+                        sed -i "s/:[0-9]\\{4,5\\}$/:$PORT/" /var/jenkins_home/.kube/config
+                        echo "✅ Kubeconfig updated to port $PORT"
+                    fi
+                '''
             }
         }
 
