@@ -214,22 +214,15 @@ pipeline {
             steps {
                 echo '💨 Running smoke test — checking app is reachable...'
                 sh '''
-                    # Get Minikube IP and add to /etc/hosts if not present
-                    MINIKUBE_IP=$(minikube ip)
-                    grep -q "flask-app.local" /etc/hosts || \
-                        echo "$MINIKUBE_IP flask-app.local" >> /etc/hosts
-
-                    # Wait for app to be ready (retry for 60 seconds)
                     for i in $(seq 1 12); do
                         echo "Attempt $i/12..."
-                        if curl -sf ${APP_URL}/health | grep -q "UP"; then
+                        if curl -sf http://192.168.49.2/health -H "Host: flask-app.local" | grep -q "UP"; then
                             echo "✅ Smoke test PASSED! App is healthy."
                             exit 0
                         fi
                         sleep 5
                     done
-
-                    echo "❌ Smoke test FAILED! App not reachable."
+                    echo "❌ Smoke test FAILED!"
                     exit 1
                 '''
             }
