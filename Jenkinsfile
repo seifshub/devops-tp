@@ -50,6 +50,7 @@ pipeline {
                     . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r app/requirements.txt
+                    pip install -r app/requirements-dev.txt
                 '''
             }
         }
