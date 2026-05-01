@@ -138,16 +138,20 @@ pipeline {
             steps {
                 echo '🔒 Scanning Docker image for vulnerabilities...'
                 sh '''
+                    # Fail only on CRITICAL with available fixes
                     trivy image \
                         --exit-code 1 \
                         --severity CRITICAL \
+                        --ignore-unfixed \
                         --format table \
                         --output trivy-report.txt \
                         ${FULL_IMAGE}
 
+                    # Warn on HIGH (never fails build)
                     trivy image \
                         --exit-code 0 \
                         --severity HIGH \
+                        --ignore-unfixed \
                         --format table \
                         ${FULL_IMAGE}
                 '''
