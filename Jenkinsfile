@@ -3,7 +3,6 @@ pipeline {
 
     // ── Environment Variables ──────────────────────────────────────
     environment {
-        // Docker Hub image name — change 'yourdockerhub' to your username
         DOCKER_IMAGE    = "seifchou/flask-devops-app"
         DOCKER_TAG      = "${BUILD_NUMBER}"          // unique tag per build
         FULL_IMAGE      = "${DOCKER_IMAGE}:${DOCKER_TAG}"
@@ -24,8 +23,8 @@ pipeline {
         // ════════════════════════════════════════════════════════════
         stage('Checkout') {
             steps {
-                echo '📥 Checking out source code...'
-                checkout scm
+                echo 'Checking out source code...'
+                checkout scm    // download code from the repository configured in Jenkins
                 sh 'ls -la'
                 
                 // Auto-update kubeconfig port from current cluster-info
@@ -112,7 +111,6 @@ pipeline {
             steps {
                 echo '🚦 Checking SonarQube Quality Gate...'
                 timeout(time: 10, unit: 'MINUTES') {
-                    // waitForQualityGate abortPipeline: true means
                     // Jenkins fails the build if SonarQube says "FAILED"
                     waitForQualityGate abortPipeline: true
                 }
@@ -193,12 +191,12 @@ pipeline {
                 echo '🌍 Provisioning infrastructure with Terraform...'
                 dir('terraform') {
                     sh '''
-                        terraform init
-                        terraform state list | grep -q kubernetes_namespace.app \
-                            || terraform import kubernetes_namespace.app flask-app
-                        terraform state list | grep -q kubernetes_namespace.monitoring \
-                            || terraform import kubernetes_namespace.monitoring monitoring
-                        terraform apply -auto-approve
+                        # Store state in a fixed location that cleanWs() never touches
+                        terraform init \
+                            -backend-config="path=/var/jenkins_home/terraform/terraform.tfstate"
+
+                        terraform apply -auto-approve \
+                            -state=/var/jenkins_home/terraform/terraform.tfstate
                     '''
                 }
             }
@@ -261,17 +259,13 @@ pipeline {
     post {
         success {
             echo '''
-            ╔══════════════════════════════════════╗
-            ║   ✅ PIPELINE COMPLETED SUCCESSFULLY  ║
-            ╚══════════════════════════════════════╝
+               ✅ PIPELINE COMPLETED SUCCESSFULLY 
             '''
         }
         failure {
             echo '''
-            ╔══════════════════════════════════════╗
-            ║   ❌ PIPELINE FAILED                  ║
-            ║   Check logs above for details        ║
-            ╚══════════════════════════════════════╝
+               ❌ PIPELINE FAILED                 
+               Check logs above for details       
             '''
         }
         always {

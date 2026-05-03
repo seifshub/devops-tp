@@ -1,5 +1,10 @@
 terraform {
   required_version = ">= 1.5.0"
+
+  backend "local" {
+    path = "/var/jenkins_home/terraform/terraform.tfstate"
+  }
+
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
