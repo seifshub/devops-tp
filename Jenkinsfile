@@ -191,7 +191,6 @@ pipeline {
                 echo '🌍 Provisioning infrastructure with Terraform...'
                 dir('terraform') {
                     sh '''
-                        # Store state in a fixed location that cleanWs() never touches
                         terraform init \
                             -backend-config="path=/var/jenkins_home/terraform/terraform.tfstate"
 

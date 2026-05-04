@@ -16,7 +16,7 @@ terraform {
 provider "kubernetes" {
   config_path    = "~/.kube/config"
   config_context = "minikube"
-  insecure       = true   # Required for Minikube local setup
+  insecure       = true
 }
 
 resource "kubernetes_namespace" "app" {
@@ -32,9 +32,7 @@ resource "kubernetes_namespace" "app" {
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
-    labels = {
-      managed-by = "terraform"
-    }
+    labels = { managed-by = "terraform" }
   }
 }
 
