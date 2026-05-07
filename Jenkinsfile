@@ -7,7 +7,6 @@ pipeline {
         DOCKER_TAG      = "${BUILD_NUMBER}"          // unique tag per build
         FULL_IMAGE      = "${DOCKER_IMAGE}:${DOCKER_TAG}"
         APP_URL         = "http://flask-app.local"
-        SONAR_PROJECT   = "flask-devops-app"
     }
 
     // ── Build Options ──────────────────────────────────────────────
@@ -92,11 +91,7 @@ pipeline {
                     // Use Jenkins-managed sonar scanner tool
                     withEnv(["PATH+SONAR=${tool 'sonar-scanner'}/bin"]) {
                         sh '''
-                            sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT} \
-                            -Dsonar.sources=app \
-                            -Dsonar.python.version=3.11 \
-                            -Dsonar.python.coverage.reportPaths=coverage.xml
+                            sonar-scanner
                         '''
                     }
                 }

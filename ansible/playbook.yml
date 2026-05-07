@@ -5,14 +5,14 @@
   gather_facts: false
 
   vars:
-    docker_image: "{{ lookup('env', 'DOCKER_IMAGE') | default('yourdockerhub/flask-app:latest') }}"
+    docker_image: "{{ lookup('env', 'DOCKER_IMAGE') | default('seifchou/flask-app:latest') }}"
     app_namespace: "flask-app"
 
   tasks:
     - name: Validate docker_image is set
       assert:
         that:
-          - docker_image != 'yourdockerhub/flask-app:latest'
+          - docker_image != 'seifchou/flask-app:latest'
         fail_msg: "docker_image must be passed via -e docker_image=..."
 
     - name: Verify kubectl can connect to cluster
